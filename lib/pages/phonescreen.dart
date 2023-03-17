@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:faspay/pages/otppage.dart';
 import 'package:faspay/pages/registerScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class PhoneScreen extends StatefulWidget {
   const PhoneScreen({super.key});
@@ -12,7 +15,8 @@ class PhoneScreen extends StatefulWidget {
 class _PhoneScreenState extends State<PhoneScreen> {
   final TextEditingController _textEditingController = TextEditingController();
   bool _isButtonEnabled = false;
-
+  bool show_preogress =false;
+  bool correct_pass_checker=false ;
   final _formKey = GlobalKey<FormState>();
   String? _phoneNumber;
 
@@ -129,12 +133,9 @@ class _PhoneScreenState extends State<PhoneScreen> {
                   color: _isButtonEnabled ? Colors.blue.shade900 : Colors.grey,
                 ),
                 child: TextButton(
-                  onPressed: _isButtonEnabled
-                      ? () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => OtpPage()),
-                          )
-                      : null,
+                  onPressed:(){
+                    login("sss","dddd");
+                  },
                   child: Text(
                     'PROCEED',
                     style: TextStyle(
@@ -147,6 +148,49 @@ class _PhoneScreenState extends State<PhoneScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  Future login(mail,pass)async{
+    var url="https://a2ctech.net/api/karatu/login.php";
+    var response;
+    if(mail==""){
+      _showToast(context,"Enter Email Address");
+    }else if(pass==""){
+      //  show_preogress=true;
+      _showToast(context,"Enter Password");
+    }else{
+
+      response=await http.post(Uri.parse(url),body:{
+        "mail":mail,
+        "pass":pass
+      });
+    }
+    var data=json.decode(response.body);
+    if(response.statusCode == 200){
+      print(response.body);
+//print(data["token"]);
+      if(data["status"]=="false"){
+        _showToast(context,"Invalid Login Details"+_textEditingController.text);
+      }
+    }else{
+      print(response.statusCode);
+
+      setState(() {
+        correct_pass_checker=true;
+      });
+    }
+    setState(() {
+      show_preogress=false;
+    });
+  }
+  void _showToast(BuildContext context,String msg) {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content:  Text(msg),
+        action: SnackBarAction(label: '', onPressed: scaffold.hideCurrentSnackBar),
       ),
     );
   }
