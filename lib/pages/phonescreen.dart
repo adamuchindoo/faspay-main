@@ -35,7 +35,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
 
   void _onTextChanged() {
     setState(() {
-      _isButtonEnabled = _textEditingController.text.length >= 10;
+      _isButtonEnabled = _textEditingController.text.length >= 11;
     });
   }
 
@@ -134,7 +134,11 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 ),
                 child: TextButton(
                   onPressed:(){
-                    login("sss","dddd");
+                    login(_textEditingController.text);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => OtpPage(phoneNumber: _textEditingController.text,)),
+                    );
                   },
                   child: Text(
                     'PROCEED',
@@ -152,38 +156,23 @@ class _PhoneScreenState extends State<PhoneScreen> {
     );
   }
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  Future login(mail,pass)async{
-    var url="https://a2ctech.net/api/karatu/login.php";
+  Future login(phone)async {
+    var url = "https://a2ctech.net/api/faspay/otp.php";
     var response;
-    if(mail==""){
-      _showToast(context,"Enter Email Address");
-    }else if(pass==""){
-      //  show_preogress=true;
-      _showToast(context,"Enter Password");
-    }else{
+    response = await http.post(Uri.parse(url), body: {
+      "phone": phone,
 
-      response=await http.post(Uri.parse(url),body:{
-        "mail":mail,
-        "pass":pass
-      });
-    }
-    var data=json.decode(response.body);
-    if(response.statusCode == 200){
+    });
+
+    var data = json.decode(response.body);
+    if (response.statusCode == 200) {
       print(response.body);
 //print(data["token"]);
-      if(data["status"]=="false"){
-        _showToast(context,"Invalid Login Details"+_textEditingController.text);
-      }
-    }else{
-      print(response.statusCode);
 
       setState(() {
-        correct_pass_checker=true;
+        show_preogress = false;
       });
     }
-    setState(() {
-      show_preogress=false;
-    });
   }
   void _showToast(BuildContext context,String msg) {
     final scaffold = ScaffoldMessenger.of(context);

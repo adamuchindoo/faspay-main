@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
-
+ // const RegisterScreen({super.key});
+  const RegisterScreen({Key? key, required this.phoneNumber}) : super(key: key);
+  final String phoneNumber;
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
@@ -338,11 +339,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             if (_formKey.currentState!.validate()) {
                               _formKey.currentState!.save();
 
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => HomePage()),
-                              );
+
                             }
                           },
                           child: Text(
