@@ -135,10 +135,12 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 child: TextButton(
                   onPressed:(){
                     login(_textEditingController.text);
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => OtpPage(phoneNumber: _textEditingController.text,)),
                     );
+
                   },
                   child: Text(
                     'PROCEED',
@@ -168,7 +170,12 @@ class _PhoneScreenState extends State<PhoneScreen> {
     if (response.statusCode == 200) {
       print(response.body);
 //print(data["token"]);
-
+      if(data["phone"]=="true"){
+        //_to_reg_page( context);
+        _showToast( context,"phone exit");
+      }else if(data["status"]=="true"){
+        _showToast( context,"goood to go");
+      }
       setState(() {
         show_preogress = false;
       });
