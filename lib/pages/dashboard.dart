@@ -18,8 +18,10 @@ class AccountHistory {
 }
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({super.key});
-
+  //const Dashboard({super.key});
+  const Dashboard({Key? key, required this.phoneNumber,required this.token}) : super(key: key);
+  final String phoneNumber;
+  final String token;
   @override
   State<Dashboard> createState() => _DashboardState();
 }

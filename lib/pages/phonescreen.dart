@@ -23,7 +23,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
   bool correct_pass_checker=false ;
   final _formKey = GlobalKey<FormState>();
   String? _phoneNumber;
-
+String name="";
   @override
   void initState() {
     super.initState();
@@ -225,8 +225,7 @@ SafeArea(
                                     new TextStyle(fontSize: 16.0, color: Colors.white)),
                                 onPressed: () {
 
-                                    MaterialPageRoute(builder: (context) => Login(phoneNumber: _textEditingController.text,));
-
+                                  goto_login(context);
                                 },
                               ),
                             ],
@@ -257,6 +256,7 @@ SafeArea(
   }
   Future login(phone)async {
     show_preogress = true;
+    FocusScope.of(context).requestFocus(new FocusNode());
     var url = "https://a2ctech.net/api/faspay/otp.php";
     var response;
     response = await http.post(Uri.parse(url), body: {
@@ -267,12 +267,12 @@ SafeArea(
     var data = json.decode(response.body);
     if (response.statusCode == 200) {
       print(response.body);
-//print(data["token"]);
       if(data["phone"]=="true"){
-
+name =data["name"];
         show_preogress = false;
         surgest_login=true;
-      }else if(data["status"]=="true"){
+      }else{
+
         goto_otp(context);
         show_preogress = false;
       }
@@ -280,6 +280,12 @@ SafeArea(
         //show_preogress = false;
       });
     }
+  }
+  void goto_login(BuildContext context){
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Login(phoneNumber: _textEditingController.text,name: name,)),
+    );
   }
   void goto_otp(BuildContext context){
     Navigator.push(
