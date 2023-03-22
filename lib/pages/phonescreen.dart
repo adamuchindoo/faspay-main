@@ -1,9 +1,12 @@
 import 'dart:convert';
+//import 'dart:html';
 
 import 'package:faspay/pages/otppage.dart';
 import 'package:faspay/pages/registerScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+import 'login.dart';
 
 class PhoneScreen extends StatefulWidget {
   const PhoneScreen({super.key});
@@ -16,6 +19,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
   final TextEditingController _textEditingController = TextEditingController();
   bool _isButtonEnabled = false;
   bool show_preogress =false;
+  bool surgest_login=false;
   bool correct_pass_checker=false ;
   final _formKey = GlobalKey<FormState>();
   String? _phoneNumber;
@@ -35,19 +39,27 @@ class _PhoneScreenState extends State<PhoneScreen> {
 
   void _onTextChanged() {
     setState(() {
-      _isButtonEnabled = _textEditingController.text.length >= 10;
+      _isButtonEnabled = _textEditingController.text.length >= 11;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          // backgroundColor: Color.fromARGB(255, 18, 98, 109),
-          ),
-      body: Padding(
+appBar: AppBar(
+
+title: Text("Welcome to faspay",textAlign: TextAlign.center,),
+
+),
+      body: Stack(
+        children: [
+
+       ListView(
+              children: [
+
+      Padding(
         padding: EdgeInsets.all(16.0),
-        child: Form(
+        child:    Form(
           key: _formKey,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -109,7 +121,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                         color: Colors.black,
                       ),
                       contentPadding:
-                          EdgeInsets.symmetric(vertical: 15.0, horizontal: 15),
+                      EdgeInsets.symmetric(vertical: 15.0, horizontal: 15),
                       prefixText: "+234 - ",
                       prefixStyle: TextStyle(
                         color: Colors.black,
@@ -134,7 +146,10 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 ),
                 child: TextButton(
                   onPressed:(){
-                    login("sss","dddd");
+                    setState(() {
+                      show_preogress=true;
+                    });
+                    login(_textEditingController.text);
                   },
                   child: Text(
                     'PROCEED',
@@ -149,41 +164,128 @@ class _PhoneScreenState extends State<PhoneScreen> {
           ),
         ),
       ),
+
+              ],
+            ),
+
+
+          Visibility(
+              visible: show_preogress,
+              child:    Container(
+
+                  color: Colors.black.withOpacity(0.5),
+                  child: ListView(
+                    children: const [
+                      LinearProgressIndicator(
+                        semanticsLabel: 'Linear progress indicator',
+                      )
+                    ],
+                  )
+              )
+
+          ),
+SafeArea(
+    child: Center(
+        child:  Visibility(
+
+            visible: surgest_login,
+            child:    GestureDetector(
+              onTap: (){
+                setState(() {
+                  surgest_login=false;
+                });
+              },
+              child: Container(
+
+                  color: Colors.black.withOpacity(0.5),
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.all(15),
+                      child:  Material(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0)),
+                        elevation: 18.0,
+                        color: Colors.white,
+                        clipBehavior: Clip.antiAlias, // Add This
+                        child: Container(
+                          padding: EdgeInsets.all(15),
+                          height: 140,
+                          child: ListView(
+                            children: [
+
+                              Text("Your mobile number is already registered \n faspay",textAlign: TextAlign.center,),
+                              SizedBox(height: 10,),
+                              MaterialButton(
+
+                                color: Colors.blue.shade900,
+                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                height: 50.0,
+                                child: new Text('Login Now',
+                                    style:
+                                    new TextStyle(fontSize: 16.0, color: Colors.white)),
+                                onPressed: () {
+
+                                    MaterialPageRoute(builder: (context) => Login(phoneNumber: _textEditingController.text,));
+
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+
+                  )
+              ),
+            )
+
+        ),),
+  ),
+
+
+        ],
+      )
+
+
     );
   }
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  Future login(mail,pass)async{
-    var url="https://a2ctech.net/api/karatu/login.php";
+  void hide_ww(){
+  setState(() {
+    surgest_login=false;
+  });
+  }
+  Future login(phone)async {
+    show_preogress = true;
+    var url = "https://a2ctech.net/api/faspay/otp.php";
     var response;
-    if(mail==""){
-      _showToast(context,"Enter Email Address");
-    }else if(pass==""){
-      //  show_preogress=true;
-      _showToast(context,"Enter Password");
-    }else{
+    response = await http.post(Uri.parse(url), body: {
+      "phone": phone,
 
-      response=await http.post(Uri.parse(url),body:{
-        "mail":mail,
-        "pass":pass
-      });
-    }
-    var data=json.decode(response.body);
-    if(response.statusCode == 200){
+    });
+
+    var data = json.decode(response.body);
+    if (response.statusCode == 200) {
       print(response.body);
 //print(data["token"]);
-      if(data["status"]=="false"){
-        _showToast(context,"Invalid Login Details"+_textEditingController.text);
-      }
-    }else{
-      print(response.statusCode);
+      if(data["phone"]=="true"){
 
+        show_preogress = false;
+        surgest_login=true;
+      }else if(data["status"]=="true"){
+        goto_otp(context);
+        show_preogress = false;
+      }
       setState(() {
-        correct_pass_checker=true;
+        //show_preogress = false;
       });
     }
-    setState(() {
-      show_preogress=false;
-    });
+  }
+  void goto_otp(BuildContext context){
+    Navigator.push(
+        context,
+      MaterialPageRoute(builder: (context) => OtpPage(phoneNumber: _textEditingController.text,)),
+    );
   }
   void _showToast(BuildContext context,String msg) {
     final scaffold = ScaffoldMessenger.of(context);
